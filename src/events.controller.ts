@@ -28,7 +28,8 @@ export class EventsController {
                 when: MoreThan(new Date('2021-02-12T13:00:00'))
             }, {
                 description: Like('%meet%')
-            }]
+            }],
+            take: 2
         });
     }
 
