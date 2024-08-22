@@ -19,7 +19,7 @@ export class EventsController {
     async findAll() {
         return await this.repository.find()
     }
-
+    // SELECT * FROM event WHERE (event.id > 3 AND event.when > '2021-02-12T13:00:00') OR event.description LIKE '%meet%' LIMIT 2
     @Get('/practice')
     async practice() {
         return await this.repository.find({
