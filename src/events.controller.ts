@@ -40,12 +40,12 @@ export class EventsController {
     @Get(':id')
     async findOne(@Param('id', ParseIntPipe) id: number) {
         console.log(typeof id);
-        
+
         return await this.repository.findOne({ where: { id } });
     }
 
     @Post()
-    async create(@Body() input: CreateEventDto) {
+    async create(@Body(new ValidationPipe({ groups: ['create'] })) input: CreateEventDto) {
         return await this.repository.save({
             ...input,
             when: new Date(input.when)
@@ -53,7 +53,7 @@ export class EventsController {
     }
 
     @Patch(':id')
-    async update(@Param('id') id, @Body() input: UpdateEventDto) {
+    async update(@Param('id') id, @Body(new ValidationPipe({ groups: ['update'] })) input: UpdateEventDto) {
         const event = await this.repository.findOne(id);
 
         return await this.repository.save({
