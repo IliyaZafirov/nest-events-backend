@@ -1,14 +1,17 @@
-import { IsString, Length, isDateString } from "class-validator";
+import { IsString, Length, IsDateString } from "class-validator";
 
 export class CreateEventDto {
     @IsString()
     @Length(5, 255, { message: "The name length is less than 5" })
     name: string;
+
     @Length(5, 255)
     description: string;
-    //@isDateString()
+
+    @IsDateString()
     when: string;
-    @Length(5, 255, {groups: ['create']})
-    @Length(10, 20, {groups: ['update']})
+
+    @Length(5, 255, { groups: ['create'] })
+    @Length(10, 20, { groups: ['update'] })
     address: string;
 }
