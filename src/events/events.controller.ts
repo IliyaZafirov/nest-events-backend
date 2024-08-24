@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, ParseIntPipe, ValidationPipe } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger } from "@nestjs/common";
 import { CreateEventDto } from "./create-event.dto";
 import { UpdateEventDto } from "./update-event.dto";
 import { Event } from "./event.entity";
@@ -8,6 +8,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 
 @Controller('/events')
 export class EventsController {
+    private readonly logger = new Logger(EventsController.name)
+
     constructor(
         @InjectRepository(Event)
         private readonly repository: Repository<Event>
@@ -17,7 +19,10 @@ export class EventsController {
 
     @Get()
     async findAll() {
-        return await this.repository.find()
+        this.logger.log(`Hit the findAll route`);
+        const events = await this.repository.find();
+        this.logger.debug(`Found ${events.length} events`);
+        return events;
     }
     // SELECT id, name FROM event WHERE (event.id > 3 AND event.when > '2021-02-12T13:00:00') OR event.description LIKE '%meet%' ORDER BY event.id DESC LIMIT 2
     @Get('/practice')
@@ -39,7 +44,6 @@ export class EventsController {
 
     @Get(':id')
     async findOne(@Param('id', ParseIntPipe) id: number) {
-        console.log(typeof id);
 
         return await this.repository.findOne({ where: { id } });
     }
