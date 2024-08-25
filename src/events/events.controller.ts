@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException } from "@nestjs/common";
 import { CreateEventDto } from "./create-event.dto";
 import { UpdateEventDto } from "./update-event.dto";
 import { Event } from "./event.entity";
@@ -45,7 +45,13 @@ export class EventsController {
     @Get(':id')
     async findOne(@Param('id', ParseIntPipe) id: number) {
 
-        return await this.repository.findOne({ where: { id } });
+        const event = await this.repository.findOne({ where: { id } });
+
+        if (!event) {
+            throw new NotFoundException();
+        }
+
+        return event;
     }
 
     @Post()
@@ -60,6 +66,10 @@ export class EventsController {
     async update(@Param('id') id, @Body() input: UpdateEventDto) {
         const event = await this.repository.findOne(id);
 
+        if (!event) {
+            throw new NotFoundException();
+        }
+
         return await this.repository.save({
             ...event,
             ...input,
@@ -71,6 +81,11 @@ export class EventsController {
     @HttpCode(204)
     async remove(@Param('id') id) {
         const event = await this.repository.findOne(id);
+
+        if (!event) {
+            throw new NotFoundException();
+        }
+
         await this.repository.remove(event);
     }
 }
