@@ -2,8 +2,10 @@ import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, ParseIntPi
 import { CreateEventDto } from "./create-event.dto";
 import { UpdateEventDto } from "./update-event.dto";
 import { Event } from "./event.entity";
-import { Like, MoreThan, MoreThanOrEqual, Repository } from "typeorm";
+import { Like, MoreThan, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Attendee } from "./attendee.entity";
+import { EventsService } from "./events.service";
 
 
 @Controller('/events')
@@ -12,7 +14,10 @@ export class EventsController {
 
     constructor(
         @InjectRepository(Event)
-        private readonly repository: Repository<Event>
+        private readonly repository: Repository<Event>,
+        // @InjectRepository(Attendee)
+        // private readonly attendeeRepository: Repository<Attendee>,
+        private readonly eventsService: EventsService
     ) { }
 
     private events: Event[] = [];
@@ -20,8 +25,9 @@ export class EventsController {
     @Get()
     async findAll() {
         this.logger.log(`Hit the findAll route`);
-        const events = await this.repository.find();
-        this.logger.debug(`Found ${events.length} events`);
+        // const events = await this.repository.find();
+        const events = await this.eventsService.getEventsWithAttendeeCountQuery();
+        this.logger.debug(`Found ${events}`);
         return events;
     }
     // SELECT id, name FROM event WHERE (event.id > 3 AND event.when > '2021-02-12T13:00:00') OR event.description LIKE '%meet%' ORDER BY event.id DESC LIMIT 2
@@ -45,7 +51,7 @@ export class EventsController {
     @Get(':id')
     async findOne(@Param('id', ParseIntPipe) id: number) {
 
-        const event = await this.repository.findOne({ where: { id } });
+        const event = await this.eventsService.getEvent(id);
 
         if (!event) {
             throw new NotFoundException();
