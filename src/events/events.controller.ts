@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, ParseIntPipe, Logger, NotFoundException, Query } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode, ParseIntPipe, Logger, NotFoundException, Query, UsePipes, ValidationPipe } from "@nestjs/common";
 import { CreateEventDto } from "./input/create-event.dto";
 import { UpdateEventDto } from "./input/update-event.dto";
 import { Event } from "./event.entity";
@@ -23,12 +23,16 @@ export class EventsController {
     private events: Event[] = [];
 
     @Get()
+    @UsePipes(new ValidationPipe({ transform: true }))
     async findAll(@Query() filter: ListEvents) {
-        this.logger.debug(filter);
-        this.logger.log(`Hit the findAll route`);
-        // const events = await this.repository.find();
-        const events = await this.eventsService.getEventsWithAttendeeCountFiltered(filter);
-        this.logger.debug(`Found ${events}`);
+
+        const events = await this.eventsService.getEventsWithAttendeeCountFilteredPaginated(
+            filter,
+            {
+                total: true,
+                currentPage: filter.page,
+                limit: 2
+            });
         return events;
     }
     // SELECT id, name FROM event WHERE (event.id > 3 AND event.when > '2021-02-12T13:00:00') OR event.description LIKE '%meet%' ORDER BY event.id DESC LIMIT 2
@@ -87,12 +91,11 @@ export class EventsController {
     @Delete(':id')
     @HttpCode(204)
     async remove(@Param('id') id) {
-        const event = await this.repository.findOne(id);
+        const result = await this.eventsService.deleteEvent(id);
 
-        if (!event) {
+        if (result?.affected !== 1) {
             throw new NotFoundException();
         }
 
-        await this.repository.remove(event);
     }
 }
